@@ -13,7 +13,7 @@ const host = '127.0.0.1'
 app.use(express.json())
 app.use(express.urlencoded())
 app.use(express.static('public'))
-//app.use(express.cookieparser())
+app.use(cookieParser())
 
 dotenv.config()
 connectDb()
