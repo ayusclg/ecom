@@ -1,0 +1,44 @@
+# Node.js
+node_modules/
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+
+# Environment Files
+.env
+.env.local
+.env.*.local
+
+# Logs
+logs/
+*.log
+npm-debug.log*
+yarn-debug.log*
+pnpm-debug.log*
+
+# Build Output
+dist/
+build/
+
+# Database Files
+*.sqlite
+*.sqlite3
+*.db
+*.db-wal
+*.db-shm
+
+# IDE Settings
+.vscode/
+.idea/
+*.suo
+*.ntvs*
+*.njsproj
+*.sln
+
+# OS-Specific Files
+.DS_Store
+Thumbs.db
+
+# React Frontend
+/public/build/
+*.cache
