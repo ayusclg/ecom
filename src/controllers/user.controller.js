@@ -113,4 +113,30 @@ const userLogin = async function(req, res) {
     }
 };
 
-export { userRegister, userLogin };
+const userLogout = async (req, res) => {
+    await User.findByIdAndUpdate(
+      req.user._id,
+      {
+        $set: {
+          refresh_token: undefined
+        }
+      },
+      {
+        new: true
+      }
+    )
+  
+    const options = {
+      httpOnly: true,
+      secure: true
+    }
+  
+    return res
+      .status(200)
+      .clearCookie("accessToken", options)
+      .clearCookie("refreshToken", options)
+      .json({
+        message: "User LoggedOut Successfully"
+      })
+  }
+export { userRegister, userLogin,userLogout };
