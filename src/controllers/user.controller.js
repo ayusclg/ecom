@@ -90,7 +90,7 @@ const userLogin = async (req, res) => {
         }
 
         const { accessToken, refreshToken } = await generateAccessAndRefreshToken(user._id);
-        //console.log(accessToken)
+        
     
         if (!accessToken || !refreshToken) {
             return res.status(500).json({
@@ -180,12 +180,12 @@ const userLogout = async (req, res) => {
         }
 
         const decodeToken = jwt.verify(token,process.env.REFRESH_TOKEN_SECRET)
-        console.log(decodeToken)
+        //console.log(decodeToken)
         
         const user = await User.findById(decodeToken?._id).select("-password -refresh_token")
-        console.log(user)
+        //console.log(user)
         
-        const latestAcessToken  = await generateAccessAndRefreshToken(user._id)
+        const latestAcessToken  = await user.generateAccessToken(user._id)
         console.log(latestAcessToken)
 
         const options ={
@@ -193,10 +193,11 @@ const userLogout = async (req, res) => {
             secure :true
         }
 
-        return res.status(201)
+        return res.status(200)
             .cookie("accessToken",latestAcessToken,options)
             .json({
-                message: "Access Token Generated Successfully"
+                message: "Access Token Generated Successfully",
+                data : latestAcessToken
             })
 
 
