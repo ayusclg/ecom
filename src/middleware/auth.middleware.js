@@ -1,11 +1,15 @@
 import jwt from "jsonwebtoken"
-import { User } from "../models/User.model.js"
+import { User } from "../models/user.models.js"
 
 export const VerifyToken = async (req, res, next) => {
   try {
-    const token = req.cookies?.accessToken
+    const token =  req.cookies?.accessToken;
+    console.log('access token',token)
+    
+    
     if (!token) {
-      res.status(401).json({
+      
+      return res.status(401).json({
         message: "Unauthorized request"
       })
     }

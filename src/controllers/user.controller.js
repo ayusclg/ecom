@@ -8,8 +8,11 @@ const generateAccessAndRefreshToken = async function(userId) {
             return null; // or throw an error
         }
 
-        const accessToken = user.generateAccessToken();
-        const refreshToken = user.generateRefreshToken();
+        const accessToken = await user.generateAccessToken();
+        const refreshToken = await user.generateRefreshToken();
+
+        console.log('gener',accessToken)
+        console.log('ref tijeb', refreshToken)
 
         user.refresh_token = refreshToken;
         await user.save({ validateBeforeSave: false });
@@ -61,15 +64,16 @@ const userRegister = async (req, res) => {
     }
 };
 
-const userLogin = async function(req, res) {
+const userLogin = async (req, res) => {
     try {
-        const { email, password } = req.body;
-
+        
+        const {email,password} = req.body
+        
         if (!email) {
             console.log('Email is required');
         }
 
-        const user = await User.findOne({ email });
+        const user = await User.findOne({ email:email });
         if (!user) {
             console.log('User does not exist');
             return res.status(404).json({
@@ -85,6 +89,8 @@ const userLogin = async function(req, res) {
         }
 
         const { accessToken, refreshToken } = await generateAccessAndRefreshToken(user._id);
+        //console.log(accessToken)
+    
         if (!accessToken || !refreshToken) {
             return res.status(500).json({
                 message: 'Failed to generate tokens'
@@ -98,7 +104,8 @@ const userLogin = async function(req, res) {
             secure: true
         };
 
-        res.status(201)
+        res
+        .status(201)
             .cookie("accessToken", accessToken, options)
             .cookie("refreshToken", refreshToken, options)
             .json({
@@ -114,8 +121,12 @@ const userLogin = async function(req, res) {
 };
 
 const userLogout = async (req, res) => {
+    
+    console.log(req.user._id)
     await User.findByIdAndUpdate(
+        
       req.user._id,
+      
       {
         $set: {
           refresh_token: undefined
@@ -125,6 +136,7 @@ const userLogout = async (req, res) => {
         new: true
       }
     )
+    
   
     const options = {
       httpOnly: true,
@@ -132,11 +144,24 @@ const userLogout = async (req, res) => {
     }
   
     return res
-      .status(200)
-      .clearCookie("accessToken", options)
-      .clearCookie("refreshToken", options)
-      .json({
-        message: "User LoggedOut Successfully"
-      })
+        .status(200)
+        .clearCookie("accessToken",options)
+        .clearCookie("refreshToken",options)
+        .json({
+            message: 'User Logged Out Successfully',
+            
+        })
   }
-export { userRegister, userLogin,userLogout };
+  const getUser = async(req,res)=>{
+    try {
+        res.status(200).json({
+            data: req.user,
+            message:"user fetched successfully"
+        })
+    } catch (error) {
+        console.log(error)
+        res.status(500).json({message:'user not logged in'})
+    }
+ }
+  
+export { userRegister, userLogin,userLogout, getUser };

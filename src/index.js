@@ -15,18 +15,18 @@ const host = '127.0.0.1'
 app.use(express.json())
 app.use(express.urlencoded())
 app.use(express.static("public"))
-app.use(cookieParser())
 
 dotenv.config()
 connectDb()
-    .then((res)=>{
-        app.listen(port,()=>{
-            console.log(`youre running on :http://${host}:${port}`)
-        })
+.then((res)=>{
+    app.listen(port,()=>{
+        console.log(`youre running on :http://${host}:${port}`)
     })
-    .catch((err)=>{
-        console.log('error occured in connection ',err)
-    })
+})
+.catch((err)=>{
+    console.log('error occured in connection ',err)
+})
 
 
+app.use(cookieParser())
 app.use("/api/v1/auth",userRoutes)
