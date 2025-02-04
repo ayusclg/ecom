@@ -1,4 +1,5 @@
 import { User } from "../models/user.models.js";
+import jwt from "jsonwebtoken"
 
 const generateAccessAndRefreshToken = async function(userId) {
     try {
@@ -163,5 +164,45 @@ const userLogout = async (req, res) => {
         res.status(500).json({message:'user not logged in'})
     }
  }
+ //extract refresh token
+  //validate refresh token
+  //decode refresh token -- extract id
+  //find user 
+  // generate access token 
+  // set in cookie
+ const refreshTokenAcess = async (req,res)=>{
+    try {
+        const token = req.cookies?.refreshToken
+        console.log(token)
+        if(!token){
+            console.log("Token not accessed")
+            res.status(401)
+        }
+
+        const decodeToken = jwt.verify(token,process.env.REFRESH_TOKEN_SECRET)
+        console.log(decodeToken)
+        
+        const user = await User.findById(decodeToken?._id).select("-password -refresh_token")
+        console.log(user)
+        
+        const latestAcessToken  = await generateAccessAndRefreshToken(user._id)
+        console.log(latestAcessToken)
+
+        const options ={
+            httpOnly : true,
+            secure :true
+        }
+
+        return res.status(201)
+            .cookie("accessToken",latestAcessToken,options)
+            .json({
+                message: "Access Token Generated Successfully"
+            })
+
+
+    } catch (error) {
+        res.status(500).json({message:"Something Went Wrong in refreshTokenAcess"})
+    }
+ }
   
-export { userRegister, userLogin,userLogout, getUser };
+export { userRegister, userLogin,userLogout, getUser,refreshTokenAcess };
