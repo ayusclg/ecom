@@ -1,29 +1,54 @@
 import { User } from "../models/user.models.js";
 import jwt from "jsonwebtoken"
 
-const generateAccessAndRefreshToken = async function(userId) {
-    try {
-        const user = await User.findById(userId);
-        if (!user) {
-            console.log('User not found');
-            return null; // or throw an error
-        }
+// const generateAccessAndRefreshToken = async function(userId) {
+//     try {
+//         const user = await User.findById(userId);
+//         if (!user) {
+//             console.log('User not found');
+//             return null; // or throw an error
+//         }
 
-        const accessToken = await user.generateAccessToken();
-        const refreshToken = await user.generateRefreshToken();
+//         const accessToken = await user.generateAccessToken();
+//         const refreshToken = await user.generateRefreshToken();
 
-        console.log('gener',accessToken)
-        console.log('ref tijeb', refreshToken)
+//         console.log('gener',accessToken)
+//         console.log('ref tijeb', refreshToken)
 
-        user.refresh_token = refreshToken;
-        await user.save({ validateBeforeSave: false });
+//         user.refresh_token = refreshToken;
+//         await user.save({ validateBeforeSave: false });
 
-        return { accessToken, refreshToken };
-    } catch (error) {
-        console.log('Error occurred in generating token:', error);
-        return null; // handle error appropriately
+//         return { accessToken, refreshToken };
+//     } catch (error) {
+//         console.log('Error occurred in generating token:', error);
+//         return null; // handle error appropriately
+//     }
+// };
+
+
+const generateAccessTokenOnly = async(userId)=>{
+    try
+    {
+     const user = await User.findById(userId)
+     const accessToken = await user.generateAccessToken()
+        return accessToken;
     }
-};
+    catch(error){
+     console.log("Error Occured in generating access Token")
+    }
+ }
+ 
+ const generateRefreshTokenOnly = async(userId)=>{
+     try {
+         const user = await User.findById(userId)
+         const refreshToken = await user.generateRefreshToken()
+         user.refresh_token = refreshToken
+          user.save({validateBeforeSave:false})
+          return refreshToken
+     } catch (error) {
+         console.log("Error Occured in generating Refresh Token")
+     }
+ }
 
 const userRegister = async (req, res) => {
     try {
@@ -88,10 +113,12 @@ const userLogin = async (req, res) => {
                 message: 'Invalid credentials'
             });
         }
-
-        const { accessToken, refreshToken } = await generateAccessAndRefreshToken(user._id);
         
-    
+        //const { accessToken, refreshToken } = await generateAccessAndRefreshToken(user._id);
+        const accessToken = await generateAccessTokenOnly(user._id);
+        const refreshToken = await generateRefreshTokenOnly(user._id);
+        console.log(accessToken,"9865474",refreshToken)
+        
         if (!accessToken || !refreshToken) {
             return res.status(500).json({
                 message: 'Failed to generate tokens'
@@ -173,20 +200,29 @@ const userLogout = async (req, res) => {
  const refreshTokenAcess = async (req,res)=>{
     try {
         const token = req.cookies?.refreshToken
-        console.log(token)
+        //console.log(token)
         if(!token){
             console.log("Token not accessed")
-            res.status(401)
+            res.status(401).json({
+                message : "unauthorized access"
+            })
         }
 
         const decodeToken = jwt.verify(token,process.env.REFRESH_TOKEN_SECRET)
         //console.log(decodeToken)
         
         const user = await User.findById(decodeToken?._id).select("-password -refresh_token")
-        //console.log(user)
+            //console.log(user)
         
-        const latestAcessToken  = await user.generateAccessToken(user._id)
-        console.log(latestAcessToken)
+        // if (token !== user["refreshToken"]) {
+        //     console.log( "Refresh token is expired or used")
+        //     res.status(401).json({
+        //         message: 'token expired '
+        //     })}
+
+        const accessToken   = await generateAccessTokenOnly(user._id)
+        const newRefreshToken = await generateRefreshTokenOnly(user._id)
+        //console.log(newRefreshToken)
 
         const options ={
             httpOnly : true,
@@ -194,10 +230,11 @@ const userLogout = async (req, res) => {
         }
 
         return res.status(200)
-            .cookie("accessToken",latestAcessToken,options)
+            .cookie("accessToken",accessToken,options)
+            .cookie("refreshToken",newRefreshToken,options)
             .json({
                 message: "Access Token Generated Successfully",
-                data : latestAcessToken
+                data : accessToken
             })
 
 
@@ -205,5 +242,103 @@ const userLogout = async (req, res) => {
         res.status(500).json({message:"Something Went Wrong in refreshTokenAcess"})
     }
  }
+
+  const updateDetails = async (req,res)=>{
+    try {
+        const {username , email} = req.body
+        if(username =="" || email==""){
+            res.status(500).json({
+                message: "validate the fields"
+            })
+        }
+        const user = await User.findByIdAndUpdate(
+            req.user?._id,{
+                $set:{
+                    username,
+                    email
+                }},
+                {
+                    new:true
+                }
+            
+        ).select("-password -refreshToken")
+
+        return res.status(200)
+        .json({
+            message:"fields updated",
+            data : user
+        })
+    } catch (error) {
+        console.log("account not updated")
+        res.status(500).json(
+            {
+                message: error-message
+            }
+        )
+    }
+  }
+
+  const updatePassword = async(req,res)=>{
+    try {
+        const {oldPassword,newPassword}= req.body
+        console.log(req.body)
+        
+         const user = await User.findById(req.user?._id)
+          const isPasswordValid = await user.isPasswordCorrect(oldPassword)
+        
+         if(!isPasswordValid){
+            return res.status(500).json({
+                message: "password doesnt matched"
+            })
+         }
+        
+
+        user.password = newPassword
+        await user.save({validateBeforeSave:false})
+
+     return res.status(200).json({
+        message: "your password Successfully changed"
+     })
+
+        
+    } catch (error) {
+        res.status(500).json({
+            messsage:"error occured in updating Password"
+        })
+    }
+  }
+
+  const updateAvatar = async(req,res)=>{
+    try {
+        const existAvatar = req.file?.path
+        if(!existAvatar){
+            res.status(404).json({
+                message:'avatar not found '
+            })
+        }
+        const newPhotoUrl = req.file?`public/images/${req.file.filename}`:"";
+        const user = await User.findByIdAndUpdate(req.user._id,{
+            $set:{
+                avatar:newPhotoUrl
+            }
+
+        },{
+            new:true
+        }).select("-password -refreshToken")
+        if(!user){
+            return res.status(500).json({
+                message: "something went wrong"
+            })
+        }
+        return res.status(200).json({
+            message:"Avatar Updated Successfully"
+        })
+
+    } catch (error) {
+        res.status(500).json({
+            message:"Avatar Not Updated"
+        })
+    }
+  }
   
-export { userRegister, userLogin,userLogout, getUser,refreshTokenAcess };
+export { userRegister, userLogin,userLogout, getUser,refreshTokenAcess,updateDetails,updatePassword,updateAvatar};
