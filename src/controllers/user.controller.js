@@ -117,7 +117,7 @@ const userLogin = async (req, res) => {
         //const { accessToken, refreshToken } = await generateAccessAndRefreshToken(user._id);
         const accessToken = await generateAccessTokenOnly(user._id);
         const refreshToken = await generateRefreshTokenOnly(user._id);
-        console.log(accessToken,"9865474",refreshToken)
+        
         
         if (!accessToken || !refreshToken) {
             return res.status(500).json({
@@ -191,12 +191,7 @@ const userLogout = async (req, res) => {
         res.status(500).json({message:'user not logged in'})
     }
  }
- //extract refresh token
-  //validate refresh token
-  //decode refresh token -- extract id
-  //find user 
-  // generate access token 
-  // set in cookie
+ 
  const refreshTokenAcess = async (req,res)=>{
     try {
         const token = req.cookies?.refreshToken
