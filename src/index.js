@@ -4,6 +4,7 @@ import dotenv from 'dotenv'
 // import { userRegister } from "./controllers/user.controller.js";
 import userRoutes from "./routes/user.route.js";
 import cookieParser from "cookie-parser";
+import productRoutes from "./routes/product.route.js"
 
 
 const app = express ()
@@ -30,3 +31,4 @@ connectDb()
 
 app.use(cookieParser())
 app.use("/api/v1/auth",userRoutes)
+app.use("/api/v1/products",productRoutes)

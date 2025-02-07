@@ -1,7 +1,7 @@
 import mongoose from "mongoose";
 
 
-const productSchema = new mongoose.schema(
+const productSchema = new mongoose.Schema(
     {
         title:{
             type:String,
@@ -25,10 +25,17 @@ const productSchema = new mongoose.schema(
         },
         category:{
             type:String,
-            enum:[clothes,electronics,household,makeup],
+            enum:["Men","Women","Children"],
+            required:true
+        },
+        in_stock:{
+            type:Number,
+            default:0,
             required:true
         }
 },
     {Timestamp:true})
 
     export const Product = mongoose.model("Product",productSchema)
+
+

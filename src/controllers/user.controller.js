@@ -276,7 +276,7 @@ const userLogout = async (req, res) => {
   const updatePassword = async(req,res)=>{
     try {
         const {oldPassword,newPassword}= req.body
-        console.log(req.body)
+        //console.log(req.body)
         
          const user = await User.findById(req.user?._id)
           const isPasswordValid = await user.isPasswordCorrect(oldPassword)
