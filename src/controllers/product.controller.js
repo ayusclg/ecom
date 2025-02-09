@@ -1,5 +1,7 @@
 import {Product} from '../models/product.models.js'
 import { User } from '../models/user.models.js'
+import path from 'path'
+import fs from 'fs'
 const addProduct = async(req,res)=>{
     try {
         const{title,description,price,category,in_stock}= req.body
@@ -75,4 +77,39 @@ const addProduct = async(req,res)=>{
         })
     }
  }
-export {addProduct,fetchProduct}
+const delProduct = async(req,res)=>{
+    try {
+        const admin = await User.findById(req.user._id)
+        if(!admin){
+            return res.status(401).json({
+                message: "Admin Only Can Access"
+            })
+        }
+        
+        const product = await Product.findById(req.params._id)
+        if(!product){
+            return res.status(401).json({
+                message:"Product Not Found"
+            })
+        }
+        console.log(product)
+        await Product.deleteOne({_id:req.params._id})
+        if(product.image){
+            
+            const imagePath = path.join(path.resolve(),product.image)
+            fs.unlink(imagePath,(err)=>{
+                if(err){
+                console.log("error occured in deleting photo")
+        }})
+        }
+        res.status(200).json({
+            message:"product successfully deleted"
+        })
+    } catch (error) {
+        res.status(500).json({
+            message: "error occured in deleting product",
+            
+        })
+    }
+}
+export {addProduct,fetchProduct,delProduct}
