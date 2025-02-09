@@ -1,7 +1,7 @@
 import {Product} from '../models/product.models.js'
 import { User } from '../models/user.models.js'
 import path from 'path'
-import fs from 'fs'
+import fs, { rmSync } from 'fs'
 const addProduct = async(req,res)=>{
     try {
         const{title,description,price,category,in_stock}= req.body
@@ -112,4 +112,41 @@ const delProduct = async(req,res)=>{
         })
     }
 }
-export {addProduct,fetchProduct,delProduct}
+const updateProduct = async (req,res)=>{
+    try {
+        const user = await User.findById(req.user._id)
+        if(!user.isAdmin){
+            return res.status(404).json({
+                message:"admin is only allowed"
+            })
+        }
+        const {title,description,price,in_stock,category} =req.body
+        console.log(title)
+        // const product = await Product.findById
+        const up = await Product.findByIdAndUpdate({_id:req.params._id},{
+            $set:{
+                title,
+                description,
+                price,
+                in_stock,
+                category,
+            }},
+            {
+                new:true
+            }
+        )
+        if (!up){
+            return res.status(401).json({
+                message:"product not updated"
+            })
+        }
+        res.status(200).json({
+            message:"product successfully Updated"
+        })
+    } catch (error) {
+        res.status(500).json({
+            message: "error in updating product details"
+        })
+    }
+}
+export {addProduct,fetchProduct,delProduct,updateProduct}
