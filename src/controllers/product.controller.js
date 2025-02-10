@@ -116,13 +116,13 @@ const updateProduct = async (req,res)=>{
     try {
         const user = await User.findById(req.user._id)
         if(!user.isAdmin){
-            return res.status(404).json({
+            return res.status(403).json({
                 message:"admin is only allowed"
             })
         }
         const {title,description,price,in_stock,category} =req.body
-        console.log(title)
-        // const product = await Product.findById
+        
+    
         const up = await Product.findByIdAndUpdate({_id:req.params._id},{
             $set:{
                 title,
@@ -149,4 +149,23 @@ const updateProduct = async (req,res)=>{
         })
     }
 }
-export {addProduct,fetchProduct,delProduct,updateProduct}
+
+const fetchSingleProduct = async (req,res)=>{
+    try {
+        const product = await Product.findById(req.params._id)
+        if(!product){
+            return res.status(404).json({
+                message: "could not find the product"
+            })
+        }
+        return res.status(200).json({
+            message: "product found",
+            data : product
+        })
+    } catch (error) {
+        res.status(500).json({
+            message:"could not fetch the product "
+        })
+    }
+}
+export {addProduct,fetchProduct,delProduct,updateProduct,fetchSingleProduct}
