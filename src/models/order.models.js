@@ -1,6 +1,6 @@
 import mongoose from "mongoose";
-import { Product } from "./product.models";
-import { User } from "./user.models";
+import { Product } from "./product.models.js";
+import { User } from "./user.models.js";
 
 const orderSchema = new mongoose.Schema({
     products:{
@@ -30,7 +30,7 @@ const orderSchema = new mongoose.Schema({
                 type:String,
                 enum:['pending','completed','rejected'],
                 required:true,
-                default:pending
+                default:"pending"
             }
         }
 
