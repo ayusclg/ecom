@@ -66,4 +66,38 @@ const allOrder = async (req,res)=>{
     }
 
 }
-export {createOrder,allOrder}
+const fetchUserOrder = async(req,res)=>{
+    try {
+        const admin = await User.findById(req.user._id)
+        if(admin.isAdmin){
+            return res.status(403).json({
+                message :" access forbidden"
+            })
+        }
+        
+        
+        const Userorder = await Order.findOne({created_by: req.user._id})
+        if(!Userorder){
+            return res.status(404).json({
+                message:"No Order Found"
+            })
+        }
+        
+
+        console.log(Userorder)
+        
+
+        res.status(200).json({
+            message:"Fetched Order",
+            data : Userorder
+        })
+
+        
+    } catch (error) {
+        res.status(500).json({
+            message: "error occured in fetchingUserOrder"
+        }
+    )
+
+}}
+export {createOrder,allOrder,fetchUserOrder}

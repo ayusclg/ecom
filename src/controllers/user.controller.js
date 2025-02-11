@@ -70,7 +70,7 @@ const userRegister = async (req, res) => {
             avatar: photourl
         });
 
-        const createdUser = await User.findById(user._id).select("-password -refresh_token");
+        const createdUser = await User.findById(user._id).select(" -password -refresh_token");
         if (!createdUser) {
             console.log('Error occurred in creating user');
             return res.status(500).json({
@@ -238,7 +238,7 @@ const userLogout = async (req, res) => {
     }
  }
 
-  const updateDetails = async (req,res)=>{
+ const updateDetails = async (req,res)=>{
     try {
         const {username , email} = req.body
         if(username =="" || email==""){
