@@ -1,7 +1,7 @@
 import {Product} from '../models/product.models.js'
 import { User } from '../models/user.models.js'
 import path from 'path'
-import fs, { rmSync } from 'fs'
+import fs from 'fs'
 const addProduct = async(req,res)=>{
     try {
         const{title,description,price,category,in_stock}= req.body
@@ -152,6 +152,7 @@ const updateProduct = async (req,res)=>{
 
 const fetchSingleProduct = async (req,res)=>{
     try {
+        
         const product = await Product.findById(req.params._id)
         if(!product){
             return res.status(404).json({

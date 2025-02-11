@@ -18,13 +18,13 @@ const createOrder = async (req,res)=>{
                 product_id:dbProduct._id,
                 name:dbProduct.title,
                 price:dbProduct.price,
-                quantity:product.quantity
+                quantity:product.quantity || 1
             })
         }
-
+        
         const creOrder = await Order.create({
             products:mapped_products,
-            created_by:req.user._id
+            created_by:(req.user._id)
         })
         if(!creOrder){
             return res.status(500).json({
@@ -32,7 +32,8 @@ const createOrder = async (req,res)=>{
             })
         }
         res.status(200).json({
-            message:"Order Successfully Created "
+            message:"Order Successfully Created ",
+            data :creOrder
         })
     } catch (error) {
         res.status(500).json({
@@ -40,4 +41,29 @@ const createOrder = async (req,res)=>{
         })
     }
 }
-export {createOrder}
+
+
+const allOrder = async (req,res)=>{
+    try {
+        const admin = await User.findById(req.user._id)
+        if(admin.isAdmin){
+            return res.status(500).json({
+                message:"acess forbidden"
+            })
+        }
+        const orders = await Order.find().populate("created_by")
+        console.log(orders)
+        return res.status(200).json({
+            message:"order fetched successfully",
+            data : orders
+        })
+        
+
+    } catch (error) {
+        res.status(500).json({
+            message:"couldnot fetch"
+        })
+    }
+
+}
+export {createOrder,allOrder}
