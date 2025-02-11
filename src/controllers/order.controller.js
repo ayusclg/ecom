@@ -74,24 +74,18 @@ const fetchUserOrder = async(req,res)=>{
                 message :" access forbidden"
             })
         }
-        
-        
+    
         const Userorder = await Order.findOne({created_by: req.user._id})
         if(!Userorder){
             return res.status(404).json({
                 message:"No Order Found"
             })
         }
-        
-
-        console.log(Userorder)
-        
-
         res.status(200).json({
             message:"Fetched Order",
             data : Userorder
         })
-
+        
         
     } catch (error) {
         res.status(500).json({
