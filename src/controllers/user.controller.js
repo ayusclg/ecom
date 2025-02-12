@@ -1,5 +1,6 @@
 import { User } from "../models/user.models.js";
 import jwt from "jsonwebtoken"
+import fs from 'fs'
 
 // const generateAccessAndRefreshToken = async function(userId) {
 //     try {
@@ -73,6 +74,9 @@ const userRegister = async (req, res) => {
         const createdUser = await User.findById(user._id).select(" -password -refresh_token");
         if (!createdUser) {
             console.log('Error occurred in creating user');
+            if(req.file){
+                fs.unlink(req.file.path)
+            }
             return res.status(500).json({
                 message: "User not created"
             });
@@ -84,6 +88,9 @@ const userRegister = async (req, res) => {
         });
     } catch (error) {
         console.log('Error in registering:', error);
+        if(req.file){
+            fs.unlink(req.file.path)
+        }
         return res.status(500).json({
             message: "User not registered"
         });

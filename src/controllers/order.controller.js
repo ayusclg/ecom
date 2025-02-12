@@ -75,7 +75,7 @@ const fetchUserOrder = async(req,res)=>{
             })
         }
     
-        const Userorder = await Order.findOne({created_by: req.user._id})
+        const Userorder = await Order.findOne({created_by: req.user._id}).populate("created_by","username")
         if(!Userorder){
             return res.status(404).json({
                 message:"No Order Found"
