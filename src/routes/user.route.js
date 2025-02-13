@@ -3,7 +3,8 @@ import { Upload } from "../middleware/multer.middleware.js";
 import {  getUser, refreshTokenAcess, updateDetails, userLogin, userLogout, userRegister ,updatePassword, updateAvatar} from "../controllers/user.controller.js";
 import { VerifyToken } from "../middleware/auth.middleware.js";
 import Joi from 'joi'
-import validator from "express-joi-validation "
+import validator from 'express-joi-validation'
+import fs from 'fs'
 
 const router = Router()
 const validate = validator.createValidator()
@@ -17,7 +18,20 @@ const validationRegisterSchema = Joi.object({
     })
     
 
-router.route("/register").post(Upload.single('avatar'),validate.body(registerValidationSchema),userRegister)
+router.route("/register").post(Upload.single('avatar'),async function(req,res,next){
+  try {
+    await validationRegisterSchema.validateAsync(req.body)
+  } catch (error) {
+    res.status(500).json({
+      message:"validation Failed"
+    })
+    if(req.file){
+      fs.unlink(req.file.path,(err)=>{
+       if(err) console.log("could Not Delete",err)
+      })
+    }
+  }
+},userRegister)
 router.route("/login").post(userLogin)
 router.route("/logout").post(VerifyToken,userLogout)
 router.route("/getuser").get(VerifyToken,getUser)

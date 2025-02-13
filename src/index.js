@@ -1,7 +1,6 @@
 import express from "express"
 import connectDb from './database/index.js';
 import dotenv from 'dotenv'
-// import { userRegister } from "./controllers/user.controller.js";
 import userRoutes from "./routes/user.route.js";
 import cookieParser from "cookie-parser";
 import productRoutes from "./routes/product.route.js"
